@@ -1,0 +1,27 @@
+# Author: Nova Senco
+# Last Change: 01 October 2020
+
+snippet hw "hello world" b
+#include <stdio.h>
+
+int main(void) {
+	${0:printf("Hello, world.\n");}
+
+	return 0;
+}
+endsnippet
+
+snippet hw2 "hello world with args" b
+#include <stdio.h>
+
+int main(int argc, char *argv[], char *envp[]) {
+	${0:printf("Hello, world.\n");}
+
+	return 0;
+}
+endsnippet
+
+snippet p "printf"
+printf("${1:%s}\n", ${2:str});
+endsnippet
+

@@ -1,0 +1,15 @@
+# Author: Nova Senco
+# Last Change: 01 October 2020
+
+snippet snip "UltiSnips snippet" w
+`!v 'snippet'` ${1:trigger} "${2}"`!p snip.rv = ' ' if t[3] else ''`${3:b}
+${0:${VISUAL}}
+`!v 'endsnippet'`
+endsnippet
+
+snippet !p "global !p" b
+global !p
+def ${1:fun}($2):
+	${3:pass}
+endglobal
+endsnippet

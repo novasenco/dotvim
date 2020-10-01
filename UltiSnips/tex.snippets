@@ -1,0 +1,247 @@
+# Author: Nova Senco
+# Last Change: 01 October 2020
+
+global !p
+texMathZones = ['texMathZone' + x for x in ['A', 'AS', 'B', 'BS', 'C', 'CS', 'D', 'DS', 'E', 'ES', 'F', 'FS', 'G', 'GS', 'H', 'HS', 'I', 'IS', 'J', 'JS', 'K', 'KS', 'L', 'LS', 'DS', 'V', 'W', 'X', 'Y', 'Z', 'AmsA', 'AmsB', 'AmsC', 'AmsD', 'AmsE', 'AmsF', 'AmsG', 'AmsAS', 'AmsBS', 'AmsCS', 'AmsDS', 'AmsES', 'AmsFS', 'AmsGS' ]]
+texIgnoreMathZones = ['texMathText']
+texMathZoneIds = vim.eval('map('+str(texMathZones)+", 'hlID(v:val)')")
+texIgnoreMathZoneIds = vim.eval('map('+str(texIgnoreMathZones)+", 'hlID(v:val)')")
+ignore = texIgnoreMathZoneIds[0]
+def math():
+	synstackids = vim.eval("synstack(line('.'), col('.') - (col('.')>=2 ? 1 : 0))")
+	try:
+		first = next(i for i in reversed(synstackids) if i in texIgnoreMathZoneIds or i in texMathZoneIds)
+		return first != ignore
+	except StopIteration:
+		return False
+endglobal
+
+snippet minimal "" b
+\\documentclass{article}
+\\title{${1:Title}}
+\\begin{document}
+${0:${VISUAL:TODO}}
+\\end{document}
+endsnippet
+
+# common
+
+snippet beg "begin{} / end{}" w
+\begin{$1}`!p
+snip.rv = ('','[')[bool(t[2])]`$2`!p
+snip.rv = ('',']')[bool(t[2])]`
+	${3:${VISUAL}}
+\end{$1}${0}
+endsnippet
+
+snippet m "Math" w
+\$$1\$`!p snip.rv = ' ' if t[2] and t[2][0] not in ',.?- ' else ''`$2
+endsnippet
+
+snippet dm "Display Math" w
+\[
+${1:${VISUAL}}
+\]$0
+endsnippet
+
+snippet t "text" w
+\text{${1:${VISUAL}}}$0
+endsnippet
+
+snippet bf "bold face" w
+\textbf{${1:${VISUAL}}}$0
+endsnippet
+
+snippet it "italic face" w
+\textit{${1:${VISUAL}}}$0
+endsnippet
+
+snippet sec "section" w
+\section{${2:${VISUAL}}}$0
+endsnippet
+
+snippet ssec "subsection" w
+\subsection{${2:${VISUAL}}}$0
+endsnippet
+
+snippet sssec "subsubsection" w
+\subsubsection${1:*}{${2:${VISUAL}}}$0
+endsnippet
+
+snippet bslash "backslash literal" w
+\textbackslash
+endsnippet
+
+snippet hline "horizontal line" b
+\noindent\rule{\textwidth}{${1:1}pt}${0}
+endsnippet
+
+snippet stack "stackrel"
+\stackrel{$1}{$2}$0
+endsnippet
+
+snippet msec "match section" w
+\mathsection
+endsnippet
+
+snippet framed "mdframe" w
+\begin{mdframed}[backgroundcolor = ${1:gray!30},
+	frametitle = ${2:Title}]
+	${0:${VISUAL}}
+\end{mdframed}
+endsnippet
+
+# table
+
+snippet table "latex table" w
+\\begin{table}[ht]
+	\\begin{tabular}{|`!p snip.rv = '|'.join(['c'] * len(t[1].split('&')))`|}
+		\\hline
+		${1:${VISUAL}} \\\\ \\hline
+		`!p
+import vim
+l = len(t[1].split('&'))
+snip.rv = '' if l == 1 else ' & '.join([vim.eval('placeholder#text()')] * l)` \\\\
+		\\hline
+	\\end{tabular}
+\\end{table}
+endsnippet
+
+snippet tro "table row" w
+$0 & `!v join(repeat([placeholder#text()], len(split(substitute(getline(search('^\s*\\begin{table}.*\_s*\zs\\begin{tabular}', 'bn')), '^.*\\begin\s*{\s*tabular\s*}\s*{|\?\([^}]\{-}\)\s*|\?\s*}', '\1', ''), '|')) - 1), ' & ')` \\\\
+endsnippet
+
+snippet tabular "tabular environment" w
+\\begin{tabular}{c} ${1:${VISUAL}} \\end{tabular}
+endsnippet
+
+snippet mcol "" w
+\multicolumn{${1:2}}{c}{${2:${VISUAL}}}$0
+endsnippet
+
+snippet hl "" w
+\\hline
+endsnippet
+
+snippet verb "inline verbatim" b
+\verb#${1:${VISUAL:text}}#$0
+endsnippet
+
+snippet list "bulleted list" w
+\begin{itemize}[nosep]
+	\item ${0:${VISUAL}}
+\end{itemize}
+endsnippet
+
+snippet enum "numbered list" w
+\begin{enumerate}[nosep]
+	\item ${0:${VISUAL}}
+\end{enumerate}
+endsnippet
+
+snippet enuma "numbered list (alpha numerals)" w
+\begin{enumerate}[nosep,label=\Alph*.]
+	\item ${0:${VISUAL}}
+\end{enumerate}
+endsnippet
+
+snippet fillin "fill in the blank"
+\underline{\quad `!v placeholder#text()` \quad}
+endsnippet
+
+snippet system ""
+\begin{equation}
+	\\left\\{
+	\\begin{aligned}[c]
+		${1:${VISUAL:System 1}} \\\\
+	\\end{aligned}
+	\\right.
+\end{equation}$0
+endsnippet
+
+snippet sympy "sympy block " w
+sympy $1 sympy$0
+endsnippet
+
+priority 10000
+snippet '\bsympy(.*)sympy' "evaluate sympy" r
+`!p
+from sympy import *
+x, y, z, t = symbols('x y z t')
+k, m, n = symbols('k m n', integer=True)
+f, g, h = symbols('f g h', cls=Function)
+init_printing()
+snip.rv = eval('latex(' + match.group(1).replace('\\', '') \
+	.replace('^', '**') \
+	.replace('{', '(') \
+	.replace('}', ')') + ')')
+`
+endsnippet
+
+priority 1000
+snippet math "mathematica block" w
+math $1 math$0
+endsnippet
+
+priority 10000
+snippet '\bmath(.*)math' "evaluate mathematica" r
+`!p
+import subprocess
+code = 'ToString[' + match.group(1) + ', TeXForm]'
+snip.rv = subprocess.check_output(['wolframscript', '-code', code])`
+endsnippet
+
+# auto
+
+priority 10
+context "math()"
+snippet '\b([A-z])(\d+)' "subscript" rwA
+`!p snip.rv = match.group(1)`_`!p
+g = match.group(2)
+snip.rv = ("{{{}}}" if len(g) > 1 else "{}").format(g)`
+endsnippet
+
+priority 100
+snippet '\b([A-z]+)(\d+)' "subscript word" rw
+`!p snip.rv = match.group(1)`_`!p
+g = match.group(2)
+snip.rv = ("{{{}}}" if len(g) > 1 else "{}").format(g)`
+endsnippet
+
+snippet // "fraction" iA
+context "math()"
+\\frac{${1:${VISUAL}}}{$2}$0
+endsnippet
+
+priority 10
+snippet bar "bar" w
+\overline{$1}$0
+endsnippet
+
+priority 100
+context "math()"
+snippet "\b([A-z])bar" "bar" rA
+\overline{`!p snip.rv=match.group(1)`}
+endsnippet
+
+priority 10
+snippet hat "hat" w
+\hat{${1:${VISUAL}}}$0
+endsnippet
+
+priority 100
+context "math()"
+snippet "\b([A-z])hat" "hat" rA
+\hat{`!p snip.rv=match.group(1)`}
+endsnippet
+
+priority 100
+context "math()"
+snippet "(\\?\w+)>>" "Vector postfix" rA
+\vec{`!p snip.rv=match.group(1)`}
+endsnippet 
+
+snippet ** "cdot" iA
+\cdot`!v ' '`
+endsnippet
+

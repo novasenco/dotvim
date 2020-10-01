@@ -1,0 +1,12 @@
+.netrwhist
+autoload/plug.vim*
+backup/*
+plugged/*/
+plugged/*
+spell
+swap/*
+undo/*
+view/*
+viminfo
+
+tags

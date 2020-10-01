@@ -1,0 +1,149 @@
+# Author: Nova Senco
+# Last Change: 01 October 2020
+
+global !p
+
+def parse_arg(token):
+    """ parse a token into (name, type, default)
+
+        side effect: clear token (cuz I am evil)
+    """
+    t = "".join(token)
+    name, *rest = t.split(":", 1)
+    if rest:
+        typ, *rest = rest[0].split("=", 1)
+        typ = typ.strip()
+    else:
+        typ = None
+        name, *rest = name.split("=", 1)
+    if rest:
+        default = rest[0].strip()
+    else:
+        default = None
+    token.clear()
+    return (name.strip(), typ, default)
+
+def get_args(args):
+    stack = []  # stack for brackets
+    bracks = {"(", "[", "{"}
+    close_bracks = {")":"(", "]":"[", "}":"{"}
+    quotes = {'"', "'"}
+    quote = None
+    bslash = False
+    token = []
+    for c in args:
+        if quote:
+            # in quotes
+            if bslash:
+                # bslash in quotes
+                bslash = False
+            elif c == quote:
+                # found closing quote
+                quote = None
+            elif c == "\\":
+                # bslash
+                bslash = True
+        else:
+            # not in quotes
+            if c in quotes:
+                quote = c
+            elif c in bracks:
+                # opening bracket/paren found
+                stack.append(c)
+            elif c in close_bracks:
+                # closing bracket/paren found
+                last = None  # last item on stack
+                open = close_bracks[c]
+                while stack and last != open:
+                    # since we're editing live text, it may be the case that some
+                    # brackets are mismatched; therefore, keep trying to pop until
+                    # we get to the first matched opening bracket; this isn't perfect,
+                    # but it's better than the alternative..
+                    last = stack.pop()
+            elif c == ",":
+                if not stack:
+                    # yay comma arg delimeter :)
+                    yield(parse_arg(token))
+                    continue
+        token.append(c)
+    if token:
+        yield parse_arg(token)
+
+endglobal
+
+snippet #! "shebang for py3" b
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+${0}
+endsnippet
+
+snippet #!2 "shebang for py2" b
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
+${0}
+endsnippet
+
+snippet coding "coding: " b
+# -*- coding: ${1:utf-8} -*-
+endsnippet
+
+snippet doc "module doc string" b
+""" ${1:main desc}
+
+	${0}
+"""
+endsnippet
+
+snippet idoc "inline doc string "
+""" ${0:${VISUAL}} """
+endsnippet
+
+snippet ifmain "if __name__ == '__main__'" b
+if __name__ == "__main__":
+	${0:pass}
+endsnippet
+
+snippet cls "class" b
+class ${1:Class}`!p snip.rv="(" if t[2] else ""`${2}`!p snip.rv=")" if t[2] else ""`:
+	"""
+	${3}`!p
+snip >> 1
+if not t[3]:
+	t[3] = snip.opt("b:placeholder", "TODO")`
+	"""
+
+	${4:pass}
+endsnippet
+
+snippet def "definition" b
+def ${1:function}($2):
+	${0:pass}
+endsnippet
+
+snippet dd "definition with docstring" b
+def ${1:function}(${2}) -> ${3:None}:
+	""" ${4:$1}`!p
+snip.rv = ""
+ph = snip.opt("b:placeholder", "TODO")
+if t[2]:
+	# there are parameters
+	snip >> 2
+	snip.rv = "\n"
+	selfs = ("self", "cls")
+	for name, typ, default in get_args(t[2]):
+		if name in selfs:
+			continue
+		d = f" (default: {default})" if default else ''
+		# snip += f":param {typ+' ' if typ else ''}{name}: {ph}{d}"
+		snip += f":param {name}: {ph}{d}"
+snip.reset_indent()
+if t[3] and t[3] != "None":
+	snip >> 2
+	snip += f":returns {t[3]}: {ph}"
+`
+	"""
+	${0:pass}
+endsnippet
+
+
+

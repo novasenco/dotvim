@@ -1,0 +1,111 @@
+# Author: Nova Senco
+# Last Change: 01 October 2020
+
+global !p
+global expanded_for # used in `snippet for`
+endglobal
+
+snippet cl "console.log()"
+console.log(${0:${VISUAL}});
+endsnippet
+
+snippet fun "function (fun)" w
+function ${1:func}($2) {
+	${VISUAL}$0
+}
+endsnippet
+
+snippet af "anonymous function" i
+function($1) {
+	${VISUAL}$0
+}
+endsnippet
+
+snippet iife "immediately-invoked function expression (iife)"
+(function(`!p snip.rv = ', '.join(w.strip()+'_' for w in t[1].split(',')) if t[1] else ''`) {
+	${VISUAL}$0
+}($1));
+endsnippet
+
+snippet proto "javascript object prototype"
+${3:`!v expand('%:p:t:r:s/\m^./\U&/')`}.prototype.${1:function} = function($2) {
+	${VISUAL}$0
+}
+endsnippet
+
+snippet switch "switch statement"
+switch (${1:${VISUAL}}) {
+	case ${2:1}:
+		$0
+		break;
+	default:
+		${3}
+}
+endsnippet
+
+snippet case "case inside switch"
+case ${1:2}:
+	$0
+	break;
+endsnippet
+
+snippet us "use strict"
+'use strict';
+endsnippet
+
+snippet by# "get element by id"
+document.getElementById("$0");
+endsnippet
+
+snippet by. "get elements by class name"
+document.getElementsByClassName("${1}")${2:[0]};
+endsnippet
+
+snippet getctx "get context"
+var ${1:ctx} = can.getContext("2d");
+endsnippet
+
+snippet ctxline "ctx.moveTo(), ctx.lineTo"
+${1:ctx}.moveTo(${2:x1}, ${3:y1});
+$1.lineTo(${3:x2}, ${4:y2});
+endsnippet
+
+snippet /**
+/**
+`!p snip.rv = " "`* ${0:description}
+`!p snip.rv = " "`*/
+endsnippet
+
+snippet @par "@param for dosctring"
+@param {${1:type}} ${2:name} ${0:description}
+endsnippet
+
+snippet @ret "@return for dosctring"
+@return {${1:type}} ${0:description}
+endsnippet
+
+snippet jsonp "JSON.parse"
+JSON.parse(${0:jstr});
+endsnippet
+
+snippet jsons "JSON.stringify"
+JSON.stringify(${0:object});
+endsnippet
+
+snippet for "pretty ok for loop"
+for (var ${1:i} = ${2:0}`!p snip.rv = ", "+t[1]+"Len = " if len(t[3]) > 0 else ""`${3:l.length}; $1 < `!p
+global expanded_for
+if len(t[3]) > 0:
+	expanded_for = False
+	t[4] = ""
+	snip.rv = t[1] + "Len"
+else:
+	if expanded_for == False:
+		expanded_for = True
+		t[4] = "0"
+	snip.rv = ""
+`${4}; ${5:$1++}) {
+	${0:${VISUAL}}
+}
+endsnippet
+

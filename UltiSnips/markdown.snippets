@@ -1,0 +1,142 @@
+# Author: Nova Senco
+# Last Change: 01 October 2020
+
+snippet img "markdown image" w
+![${1:alt text}](${2:uri})
+endsnippet
+
+snippet link "link" w
+[${1:${VISUAL}}](${2:uri})
+endsnippet
+
+global !p
+import vim
+
+from re import compile as recompile
+
+re_bar = recompile(r'\s*\|\s*')
+re_cell = recompile(r'^(\$\{(\d+)\}:)?\s*(.*)')
+re_sub = recompile('\$\{(\d\+)\}')
+
+def eval_md_table(v):
+	if not v.text:
+		return ''
+	cells = [re_cell.match(re_bar.split(line.strip()))[1:] for line in v.text.split("\n")]
+	for rowi, row in enumerate(cells):
+		for coli, cell in enumerate(row):
+			if not re_sub.match(cell[1]): cells[rowi][coli] = cell[1]
+			else: cells[rowi][coli] = get_cell(cells, cell)
+	return (' | '.join(row) for row in cells)
+	return out
+
+def get_cell(cells, sub):
+	items = re_sub.split(sub)
+	subs = list(map(lambda x: int(x[1]), filter(lambda x: x[0] % 2 == 1, enumerate(items))))
+	subscopy = subs.copy()
+	for line in cells:
+		for cell in line:
+			if cell[0] is None: continue
+			for i,s in enumerate(subscopy):
+				if cell[0] == s:
+					subs[i] = cell[1]
+					subscopy[i] = None
+			if all(s is None for s in subscopy): break
+		if all(s is None for s in subscopy): break
+	for i in range(1, len(items) - 2, 2):
+		items[i] = '$\{{{}}}:'.format(subscopy[(i - 1) // 2]) if subscopy[(i - 1) // 2] is not None else subs[(i - 1) // 2]
+	return ''.join(items)
+endglobal
+
+snippet pandoc "setup everything for pandoc" b
+---
+title: ${1:title}
+author: ${2:Dylan McClure}
+date: ${3:`!v strftime('%A %B %d, %Y')`}
+header-includes: |
+    ${4:\usepackage{enumitem}
+    \usepackage{amssymb}
+    \usepackage{graphicx}
+    \newcommand{\comm}[1]{}}
+papersize: letter
+geometry: margin=1in
+---
+
+# ${5:Topic}
+
+endsnippet
+
+snippet enum "enumerate numbers" b
+\begin{enumerate}[]
+${0:${VISUAL:\item }}
+\end{enumerate}
+endsnippet
+
+snippet enuma "enumerate Alpha" b
+\begin{enumerate}[label=\Alph*.] \comm{*}
+${0:${VISUAL:\item }}
+\end{enumerate}
+endsnippet
+
+snippet underfill "create an underline to fill in later"
+\underline{\qquad {@} \qquad}
+endsnippet
+
+snippet align "align math stuff" b
+\begin{align*} \comm{*}
+${1:${VISUAL}}
+\end{align*} \comm{*}
+endsnippet
+
+snippet ic "inline code" w
+\`${1:${VISUAL}}\`{.${2:c}}
+endsnippet
+
+snippet box "" w
+\boxed{${1:${VISUAL}}}
+endsnippet
+
+snippet "table(\d+)" "latex table that provides some flexibility" r
+\begin{table}[ht]
+\begin{tabular}{|`!p snip.rv = '|'.join(['c'] * int(match.group(1)))`|}
+\cline{1-`!p snip.rv = int(match.group(1))`}
+${1}{@} `!p snip.rv = '& {@} ' * (int(match.group(1)) - 1)` \\\\
+\cline{1-`!p snip.rv = int(match.group(1))`}
+\end{tabular}
+\end{table}
+endsnippet
+
+snippet multicol "" w
+\multicolumn{1}{|r|}{${1:${VISUAL}}}
+endsnippet
+
+snippet mathrm "\mathrm{}" w
+\mathrm{${1:${VISUAL}}}
+endsnippet
+
+snippet proof "create a small proof for discrete math" b
+\begin{align*} \comm{*}
+\boxed{1} \quad & {@} &{}& \text{premise}
+\boxed{2} \quad & {@} &{}& \text{premise}
+\boxed{3} \quad & {@} &{}& \text{\boxed{{@}}, {@}}
+\end{align*} \comm{*}
+endsnippet
+
+# TODO
+snippet pline "create line in proof" b
+`!v substitute(getline(line('.')-1), '^\s*\\boxed{\(\d\+\)}\?.*', '\\boxed{'.(submatch(1)+1).'} \\quad \& {@} \&{}\& \\text{\\boxed{@}, {@}}', '')`
+endsnippet
+
+snippet mdtable "markdown table" b
+| ${1} |
+|`!p snip.rv = ' --- |' * len(t[1].split('|'))`
+|`!p snip.rv = ' {@} |' * len(t[1].split('|'))`
+endsnippet
+
+snippet evaltable "evaluate markdown table" b
+`!p snip.rv = eval_md_table(snip.v)`
+endsnippet
+
+snippet f "\frac{a}{b}"
+\frac{${1}}{${2}}
+endsnippet
+

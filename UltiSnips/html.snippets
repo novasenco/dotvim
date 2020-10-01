@@ -1,0 +1,109 @@
+# Author: Nova Senco
+# Last Change: 01 October 2020
+
+snippet a "Link" w
+<a href="${1:https://url.com}"${2: target="_blank"}>${3}</a>
+endsnippet
+
+snippet div "div" w
+<div>
+	${0:${VISUAL}}
+</div>
+endsnippet
+
+snippet div# "div with id and class" w
+<div`!p snip.rv=' id="' if t[1] else ""`${1:id}`!p snip.rv = '"' if t[1] else ""``!p snip.rv=' class="' if t[2] else ""`${2:name}`!p snip.rv = '"' if t[2] else ""`>
+	${0:${VISUAL}}
+</div>
+endsnippet
+
+snippet div. "div with class" w
+<div`!p snip.rv=' class="' if t[1] else ""`${1:name}`!p snip.rv = '"' if t[1] else ""`>
+	${0:${VISUAL}}
+</div>
+endsnippet
+
+snippet h1 "h1 tag" w
+<h1>${0:${VISUAL}}</h1>
+endsnippet
+
+snippet h2 "h2 tag" w
+<h2>${0:${VISUAL}}</h2>
+endsnippet
+
+snippet h3 "h3 tag" w
+<h3>${0:${VISUAL}}</h3>
+endsnippet
+
+snippet h4 "h4 tag" w
+<h4>${0:${VISUAL}}</h4>
+endsnippet
+
+snippet h5 "h5 tag" w
+<h5>${0:${VISUAL}}</h5>
+endsnippet
+
+snippet h6 "h6 tag" w
+<h6>${0:${VISUAL}}</h6>
+endsnippet
+
+snippet html "HTML basic structure" b
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<title>${1:`!p snip.rv = snip.basename.replace('-', ' ').capitalize()`}</title>
+	</head>
+	<body>
+		${0:body}
+	</body>
+</html>
+endsnippet
+
+snippet img "<img>"
+<img src="$1" alt="$2">
+endsnippet
+
+snippet input "HTML <input>" w
+<input type="${1:text/submit/hidden/button}" name="${2:some_name}" value="$3"${4: id="${5:$2}"}`!p x(snip)`>
+endsnippet
+
+snippet mailto "HTML <a mailto: >" w
+<a href="mailto:${1:joe@example.com}?subject=${2:feedback}">${3:email me}</a>
+endsnippet
+
+snippet ol "<ol>"
+<ol>
+	<li>$1</li>$0
+</ol>
+endsnippet
+
+snippet script "HTML <script>" w
+<script charset="utf-8">
+	${0:${VISUAL}}
+</script>
+endsnippet
+
+snippet scriptsrc "HTML <script src...>" w
+<script src="$1" charset="${3:utf-8}"></script>
+endsnippet
+
+snippet select "Select Box" w
+<select name="${1:some_name}" id="${2:$1}"${3:${4: multiple}${5: size="${6:1}"}}>
+	${0:${VISUAL}}
+</select>
+endsnippet
+
+snippet select "Select Box" w
+<select name="${1:some_name}" id="${2:$1}"${3:${4: multiple}${5: size="${6:1}"}}>
+	${0:${VISUAL}}
+</select>
+endsnippet
+
+snippet style "HTML <style>" w
+<style type="text/css" media="screen">
+	${0:${VISUAL}}
+</style>
+endsnippet
+
