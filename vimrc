@@ -1,5 +1,5 @@
 " Author: Nova Senco
-" Last Change: 01 October 2020
+" Last Change: 02 October 2020
 
 " SETUP:           {{{1
 
@@ -8,7 +8,7 @@ let $VIMDIR = fnamemodify($MYVIMRC, ':p:h') " cache vim config (use ~/.vim/vimrc
 sil! set encoding=utf-8   " set vim encoding    (keep first!  order matters!)
 sil! scriptencoding utf-8 " set script encoding (keep second! order matters!)
 
-if !v:vim_did_enter
+if has('vim_starting')
   syntax enable " enable syntax hl (super slow!); if-guard makes re-:source-ing fast!
 endif
 
@@ -40,7 +40,7 @@ endif
 
 " OPTIONS:         {{{1
 
-if !v:vim_did_enter || get(g:, 'reload_vimrc_options')
+if has('vim_starting')  || get(g:, 'reload_vimrc_options')
 
   set   autoread                   " auto read files changed externally if buffer unmodified
   set   backspace=start,eol,indent " backspace unconditionally works in insert mode
@@ -60,7 +60,6 @@ if !v:vim_did_enter || get(g:, 'reload_vimrc_options')
   set noshowmode                   " don't show --INSERT-- etc
   set   splitbelow splitright      " hsplit opens below; vsplit opens on right
   set nostartofline                " don't change cursor column when jumping or switching buffers
-  set   switchbuf=uselast          " quickfix jump to last used buffer
   set notimeout                    " don't timeout for mappings
   set   ttimeout                   " timeout for key sequences
   set   ttimeoutlen=5              " wait only 5 milliseconds for key sequences
@@ -91,10 +90,12 @@ if !v:vim_did_enter || get(g:, 'reload_vimrc_options')
     set undofile
   endif
 
-  set belloff=all  " do not ring bell for any vim event
-  set noerrorbells " do not ring bell for any error message
-  set visualbell   " do not beep; ring bell, but we disabled all bells >:)
-  set t_vb=        " make visual bell produce no control bytes
+  if exists('+belloff')
+    set belloff=all  " do not ring bell for any vim event
+  endif
+  set noerrorbells   " do not ring bell for any error message
+  set visualbell     " do not beep; ring bell, but we disabled all bells >:)
+  set t_vb=          " make visual bell produce no control bytes
 
   set shortmess=aoO     " abbreviate; write overwrites read msg; read overwrites any msg (quiet :cn)
   set shortmess+=sT     " don't show 'search hit BOTTOM/TOP'; truncate long msgs in middle; no intro
@@ -131,7 +132,9 @@ if !v:vim_did_enter || get(g:, 'reload_vimrc_options')
 
   if has('viminfo')
     " hide viminfo in $VIMDIR instead of in $HOME
-    exe printf('set viminfofile=%s/viminfo', $VIMDIR)
+    if exists('+viminfofile')
+      exe printf('set viminfofile=%s/viminfo', $VIMDIR)
+    endif
     exe printf('set viminfo+=n%s/viminfo', $VIMDIR)
   endif
 
@@ -185,6 +188,10 @@ if !v:vim_did_enter || get(g:, 'reload_vimrc_options')
     set completeopt+=preview " use preview window if no popup available
   endif
 
+  if v:version > 801 || v:version == 801 && has('patch2315')
+    set switchbuf=uselast " quickfix jump to last used buffer
+  endif
+
   let reload_vimrc_options = 0
 
 endif
@@ -222,7 +229,6 @@ nnoremap <silent> <localleader>v :edit $MYVIMRC<cr>
 nnoremap <silent> <localleader>V :SourceVimAll<cr>
 nnoremap <silent> <localleader>S :SourceCurrent<cr>
 nnoremap <silent> <localleader>R :SourceGuarded<cr>
-
 
 " move lines to end or beg of paragraph (resp)
 noremap <silent> m} :<c-b>keepp <c-e>m/\n\n<cr>
@@ -291,6 +297,10 @@ xmap <leader>I <plug>(IterPrev)
 nmap <localleader>i <plug>(IterReset)
 imap <c-r>[ <plug>(IterPrev)
 imap <c-r>] <plug>(IterNext)
+
+" paragraph nav
+nnoremap <silent> } :call search('^\n\+\zs', 'sW')<cr>zv
+nnoremap <silent> { :call search('^\n\+\zs', 'sWb')<cr>zv
 
 " Spell: {{{2
 
@@ -592,6 +602,11 @@ augroup Vimrc
 
   autocmd SwapExists * call autocmd#HandleSwap(expand('<afile>:p'))
 
+  " don't store swap, backup, viminfo for files in /tmp
+  autocmd VimEnter,BufNew * if expand('<afile>:p') =~ '^/tmp'
+  autocmd VimEnter,BufNew *   setl noswapfile viminfo= nowritebackup nobackup
+  autocmd VimEnter,BufNew * endif
+
   " automatically update time stamps for various files without messing up
   " view; don't update at all if time stamp is already up-to-date in order
   " to preserve undo history
@@ -783,6 +798,7 @@ call plug#begin($VIMDIR.'/plugged')
 Plug 'dylnmc/ctrlg.vim'
 Plug 'junegunn/goyo.vim'
 Plug 'junegunn/gv.vim'
+Plug 'tweekmonster/helpful.vim'
 " Plug 'dylnmc/lsbuffer.vim'
 Plug 'dylnmc/placeholder.vim'
 Plug 'vim-python/python-syntax'
