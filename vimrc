@@ -1,5 +1,5 @@
 " Author: Nova Senco
-" Last Change: 02 October 2020
+" Last Change: 03 October 2020
 
 " SETUP:           {{{1
 
@@ -301,6 +301,9 @@ imap <c-r>] <plug>(IterNext)
 " paragraph nav
 nnoremap <silent> } :call search('^\n\+\zs', 'sW')<cr>zv
 nnoremap <silent> { :call search('^\n\+\zs', 'sWb')<cr>zv
+
+" show stats about visual selection (like 'showcmd' but better and not persistent)
+xnoremap <expr> <leader>p maps#v_expr_print()
 
 " Spell: {{{2
 

@@ -1,5 +1,5 @@
 " Auhor: Nova Senco
-" Last Change: 30 September 2020
+" Last Change: 03 October 2020
 
 " Random: {{{1
 
@@ -57,6 +57,41 @@ function! maps#StarSearch(forward, bounds, mode)
   call histadd('/', word)
   call search(word, 'sc'.(a:forward ? 'e' : 'b'))
   call search(word, 's'.(a:forward ? '' : 'b'))
+endfunction
+
+function! maps#v_expr_print()
+  let m = mode()
+  let l = abs(line('v') - line('.')) + 1
+  unsil echon m ': '
+  echohl Number
+  unsil echon l
+  echohl NONE
+  if m is "\<c-v>"
+    echon 'x'
+    echohl Number
+    echon abs(virtcol('v') - virtcol('.')) + 1
+    echohl NONE
+  endif
+  let wc = wordcount()
+  echohl SpecialKey
+  echon ' -> '
+  echohl Number
+  unsil echon wc.visual_chars
+  echohl NONE
+  echon ' chars'
+  echohl SpecialKey
+  echon ' -> '
+  echohl Number
+  unsil echon wc.visual_bytes
+  echohl NONE
+  echon ' bytes'
+  echohl SpecialKey
+  echon ' -> '
+  echohl Number
+  unsil echon wc.visual_words
+  echohl NONE
+  echon ' words'
+  return ''
 endfunction
 
 " Quick: {{{1
