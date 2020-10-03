@@ -14,7 +14,7 @@ endif
 
 filetype plugin indent on " enable filetype plugins and indent magic
 
-if has('clientserver') && empty(v:servername)
+if has('clientserver') && empty(v:servername) && !empty($DISPLAY)
   call remote_startserver('VIM') " allow clientserver communication
 endif
 
@@ -616,7 +616,7 @@ augroup Vimrc
   autocmd BufWritePre doc/*.txt call autocmd#UpdateDate()
   autocmd BufWritePre *.vim call autocmd#UpdateDate('^" Last Change:')
   autocmd BufWritePre {?,}vimrc call autocmd#UpdateDate('^" Last Change:')
-  autocmd BufWritePre *.{py,snippets} call autocmd#UpdateDate('^# Last Change:')
+  autocmd BufWritePre *.{py,snippets,sh,bash,zsh} call autocmd#UpdateDate('^# Last Change:')
   autocmd BufWritePre *.c,*.cpp,*.js call autocmd#UpdateDate('^\%(\/\/\| *\) Last Change:')
 
   autocmd FileType python if expand('%:t') =~ '^test_' && executable('pytest')
