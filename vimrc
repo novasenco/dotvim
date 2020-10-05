@@ -1,5 +1,5 @@
 " Author: Nova Senco
-" Last Change: 03 October 2020
+" Last Change: 05 October 2020
 
 " SETUP:           {{{1
 
@@ -19,10 +19,8 @@ if has('clientserver') && empty(v:servername) && !empty($DISPLAY)
 endif
 
 " set up Meta to work properly for most keys in terminal vim
-" NOTE: use "map <m-\|>" or "map <m-bar>" to map <bar> (|)
 if !has('nvim') && !has('gui_running')
-  " but only in terminal vim
-  " PROBLEM: not possible to map Meta with Arrow Keys
+  " PROBLEMS: not possible to map Meta with Arrow Keys or Tab (etc)
   " PROBLEMS: 32 (space), 62 (>), 91 ([), 93 (])
   for ord in range(33,61)+range(63,90)+[92]+range(94,126)
     let char = ord is 34 ? '\"' : ord is 124 ? '\|' : nr2char(ord)
@@ -31,12 +29,13 @@ if !has('nvim') && !has('gui_running')
       exec printf("tnoremap <silent> <m-%s> <esc>%s", char, char)
     endif
   endfor
-  " NOTE: if below don't work, compare with ctrl-v + CTRL-{LEFT,RIGHT} in INSERT mode
-  " PROBLEM: <c-up>,<c-down> do not work in any terminal
+  " PROBLEMS: <c-up>,<c-down> do not work in any terminal
   " set up <c-left> and <c-right> properly
   exe "set <c-right>=\<esc>[1;5C"
   exe "set <c-left>=\<esc>[1;5D"
+  " NOTE: if above don't work, compare with ctrl-v + CTRL-{LEFT,RIGHT} in INSERT mode
 endif
+" NOTE: use "map <m-\|>" or "map <m-bar>" to map <bar> (|)
 
 " OPTIONS:         {{{1
 
@@ -297,10 +296,6 @@ xmap <leader>I <plug>(IterPrev)
 nmap <localleader>i <plug>(IterReset)
 imap <c-r>[ <plug>(IterPrev)
 imap <c-r>] <plug>(IterNext)
-
-" paragraph nav
-nnoremap <silent> } :call search('^\n\+\zs', 'sW')<cr>zv
-nnoremap <silent> { :call search('^\n\+\zs', 'sWb')<cr>zv
 
 " show stats about visual selection (like 'showcmd' but better and not persistent)
 xnoremap <expr> <leader>p maps#v_expr_print()
@@ -903,15 +898,16 @@ call plug#end()
 " COLOR:           {{{1
 
 let s:colors_name = get(g:, 'colors_name', 'default')
-if s:colors_name is 'default' || s:colors_name is 'desert'
+let s:color_default = 'desert'
+if s:colors_name is 'default' || s:colors_name is s:color_default
   try
     " TGC
-    set background=dark
     colo vulpo
   catch /^Vim\%((\a\+)\)\=:E185:/
-    colo desert
+    set bg=dark
+    exe 'colo' s:color_default
   endtry
 else
-  execute 'colo '.get(g:, 'colors_name', 'desert')
+  execute 'colo '.get(g:, 'colors_name', s:color_default)
 endif
 
