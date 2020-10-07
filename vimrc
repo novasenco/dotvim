@@ -654,6 +654,7 @@ augroup Vimrc
     autocmd TerminalWinOpen * setl nolist nonu
   endif
 
+  autocmd BufRead *.pdf e %:r.txt | set bt=nofile | sil r !pdftotext # | 1d
 augroup end
 
 " PLUGIN SETTINGS: {{{1
