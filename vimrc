@@ -1,5 +1,5 @@
 " Author: Nova Senco
-" Last Change: 05 October 2020
+" Last Change: 07 October 2020
 
 " SETUP:           {{{1
 
@@ -197,9 +197,21 @@ endif
 
 " MAPS:            {{{1
 
-" Random: {{{2
+" Abbrevs: {{{2
 
+" I never type unknown properly
 abbrev unkown unknown
+
+" quazi-fix missing "v" prefixed commands
+cabbrev <expr> vsb getcmdline() =~# '^vsb' && getcmdpos() is 4 ? 'vert sb' : 'vsb'
+cabbrev <expr> vh getcmdline() =~# '^vh' && getcmdpos() is 3 ? 'vert h' : 'vh'
+cabbrev <expr> vsn getcmdline() =~# '^vsn' && getcmdpos() is 4 ? 'vert sn' : 'vsn'
+cabbrev <expr> vsp getcmdline() =~# '^vsp' && getcmdpos() is 4 ? 'vert sp' : 'vsp'
+cabbrev <expr> vsbn getcmdline() =~# '^vsbn' && getcmdpos() is 5 ? 'vert sbn' : 'vsbn'
+cabbrev <expr> vsbp getcmdline() =~# '^vsbp' && getcmdpos() is 5 ? 'vert sbp' : 'vsbp'
+cabbrev <expr> vterm getcmdline() =~# '^vterm' && getcmdpos() is 6 ? 'vert term' : 'vterm'
+
+" Random: {{{2
 
 " leader config
 nmap <space> <nop>
@@ -545,16 +557,16 @@ command! -nargs=0 -bar TGC if has('termguicolors') && !str2nr($VIM_NOTGC
  \| endif
 
 command! -nargs=0 -bar SourceVimrc Keepview source $MYVIMRC | redraw
- \| sil! call popup_atcursor('vimrc loaded', #{moved:'any',line:'cursor+1',col:'cursor+1'})
+ \| echo 'vimrc loaded'
 
 command! -nargs=0 -bar SourceVimAll Keepview source $MYVIMRC
  \\| let __sv = map(cmds#SourceListedVimfiles(), { _,f -> fnameescape(fnamemodify(f, ':~:.')) })
  \| redraw | echo 'vimrc loaded'.(empty(__sv)?'':' +('.join(__sv, ', ').')')
 
-command! -nargs=0 -bar SourceCurrent Keepview so % | redraw | echo 'Sourced' expand('%')
+command! -nargs=0 -bar SourceCurrent Keepview so % | redraw | echo 'Sourced' expand('%:.:~')
 
 command! -nargs=0 -bar SourceGuarded Keepview call cmds#SourceVimGuard() | redraw
- \| echo 'Sourced' expand('%')
+ \| echo 'Sourced' expand('%:.:~')
 
 command! -nargs=1 -bar Keepview let w:viewsav = winsaveview() | <args> | call winrestview(w:viewsav)
 
