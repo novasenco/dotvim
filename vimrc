@@ -1,5 +1,5 @@
 " Author: Nova Senco
-" Last Change: 07 October 2020
+" Last Change: 08 October 2020
 
 " SETUP:           {{{1
 
@@ -517,8 +517,7 @@ command! -complete=file -nargs=1 -bar Rename call cmds#Rename(<q-args>)
 command! DiffOrig vert new|set buftype=nofile|read ++edit #|0d_|diffthis|wincmd p|diffthis
 
 " remove trailing whitespace
-command! -nargs=0 -range=% -bar RmTrailWS let _rsav_=@/|sil! <line1>,<line2>s/\s\+$//
- \ |let @/=_rsav_|unlet _rsav_|normal! ``
+command! -nargs=0 -range=% -bar RmTrailWS Keepview keepp <line1>,<line2>s/\s\+$//e
 
 command! -bar -nargs=0 PreviewTags execute &previewheight.'new'
  \ |setlocal buftype=nofile|put=getcompletion('', 'tag')|1delete
