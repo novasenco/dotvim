@@ -125,8 +125,8 @@ if has('vim_starting')  || get(g:, 'reload_vimrc_options')
   endif
 
   if has('conceal')
-    set concealcursor=ni " hide concealed text in normal, insert modes
-    set conceallevel=2   " conceal text fully but show cchar if defined
+    set concealcursor=n " hide concealed text in normal, insert modes
+    set conceallevel=2  " conceal text fully but show cchar if defined
   endif
 
   if has('viminfo')
@@ -567,7 +567,7 @@ command! -nargs=0 -bar SourceCurrent Keepview so % | redraw | echo 'Sourced' exp
 command! -nargs=0 -bar SourceGuarded Keepview call cmds#SourceVimGuard() | redraw
  \| echo 'Sourced' expand('%:.:~')
 
-command! -nargs=1 -bar Keepview let w:viewsav = winsaveview() | <args> | call winrestview(w:viewsav)
+command! -nargs=1 -bar Keepview let w:viewsav = winsaveview() | exe <q-args> | call winrestview(w:viewsav)
 
 " AUTOCMDS:        {{{1
 
@@ -826,6 +826,7 @@ Plug 'fcpg/vim-altscreen'
 Plug 'tpope/vim-commentary'
 Plug 'tommcdo/vim-exchange'
 Plug 'tpope/vim-fugitive'
+Plug 'tpope/vim-markdown'
 Plug 'sickill/vim-pasta'
 " Plug 'junegunn/vim-plug'
 Plug 'tpope/vim-repeat'
@@ -850,7 +851,7 @@ Plug 'cocopon/iceberg.vim'
 Plug 'ajh17/spacegray.vim'
 Plug 'dylnmc/vim-colors-paramount'
 Plug 'lifepillar/vim-gruvbox8'
-Plug 'dylnmc/vulpo.vim'
+Plug 'novasenco/vulpo.vim'
 
 " " GREAT: Some of the best, and I like 'em
 " Plug 'AlessandroYorba/Alduin'
