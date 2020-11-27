@@ -1,5 +1,5 @@
 " Author: Nova Senco
-" Last Change: 01 October 2020
+" Last Change: 12 October 2020
 
 " search through a list of buffer numbers/names with *grep*
 function! cmds#FilelistGrep(search, lst)
@@ -69,9 +69,9 @@ function! cmds#SourceVimGuard()
             let l:guardName = substitute( l:line, l:guardMatch, '\1', '')
         elseif l:line =~# '\m^\s*finish\s*$'
             if ! empty(l:guardName)
-                execute 'unlet g:'.l:guardName
+                execute 'sil! unlet g:'.l:guardName
             endif
-            execute 'source '.expand('%:p')
+            execute 'source' fnameescape(expand('%:p'))
             return
         endif
     endfor

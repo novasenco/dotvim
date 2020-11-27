@@ -1,5 +1,5 @@
 # Author: Nova Senco
-# Last Change: 01 October 2020
+# Last Change: 05 October 2020
 
 snippet /* ""
 /* ${0:${VISUAL}} */
@@ -7,5 +7,16 @@ endsnippet
 
 snippet date "quickly add a date"
 `!v strftime("%d %B %Y")`
+endsnippet
+
+snippet box "box around text"
+┌`!p snip.rv = "─" * (2 + len(t[1]))`┐
+│ ${1:${VISUAL}} │
+└`!p snip.rv = "─" * (2 + len(t[1]))`┘
+endsnippet
+
+snippet cbox "box around text all centered"
+`!p import vim
+snip.rv = "\n".join(dir(vim))`
 endsnippet
 

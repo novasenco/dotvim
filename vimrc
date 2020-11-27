@@ -1,7 +1,7 @@
 " Author: Nova Senco
-" Last Change: 08 October 2020
+" Last Change: 27 November 2020
 
-" SETUP:           {{{1
+" SETUP: {{{1
 
 let $VIMDIR = fnamemodify($MYVIMRC, ':p:h') " cache vim config (use ~/.vim/vimrc NOT ~/.vimrc)
 
@@ -37,14 +37,15 @@ if !has('nvim') && !has('gui_running')
 endif
 " NOTE: use "map <m-\|>" or "map <m-bar>" to map <bar> (|)
 
-" OPTIONS:         {{{1
+" OPTIONS: {{{1
 
-if has('vim_starting')  || get(g:, 'reload_vimrc_options')
+if has('vim_starting') || get(g:, 'reload_vimrc_options')
 
   set   autoread                   " auto read files changed externally if buffer unmodified
   set   backspace=start,eol,indent " backspace unconditionally works in insert mode
   set   cpoptions+=y               " yanks repeatable with dot operator
   set   expandtab ts=2 sts=2 sw=0  " 2 spaces
+  set   fillchars=vert:\|          " vertical splits easier to distinguish
   set   formatoptions+=j           " auto remove comment when joining lines
   set   hidden                     " edit another buffer with unsaved changes
   set   ignorecase smartcase       " ignore case for complete/search unless there's an uppercase
@@ -59,6 +60,13 @@ if has('vim_starting')  || get(g:, 'reload_vimrc_options')
   set noshowmode                   " don't show --INSERT-- etc
   set   splitbelow splitright      " hsplit opens below; vsplit opens on right
   set nostartofline                " don't change cursor column when jumping or switching buffers
+  set   suffixes+=.aux,.bbl,.blg   " remove priority from these suffixes
+  set   suffixes+=.brf,.cb,.dvi
+  set   suffixes+=.idx,.ilg,.ind
+  set   suffixes+=.inx,.jpg,.log
+  set   suffixes+=.out,.png,.toc
+  set   suffixes-=.h               " give priority to these suffexes
+  set   suffixes-=.obj
   set notimeout                    " don't timeout for mappings
   set   ttimeout                   " timeout for key sequences
   set   ttimeoutlen=5              " wait only 5 milliseconds for key sequences
@@ -145,6 +153,7 @@ if has('vim_starting')  || get(g:, 'reload_vimrc_options')
   " set default fold method to marker
   if has('folding')
     set foldmethod=marker
+    " set fillchars+=fold:·
   endif
 
   if has('wildmenu')
@@ -152,8 +161,8 @@ if has('vim_starting')  || get(g:, 'reload_vimrc_options')
   endif
 
   if has('statusline')
-    set laststatus=2                         " I don't normally show the statusline
-    set statusline=%.30f%<%(\ [%M%R%W]%)%=%y " but when I do, I prefer dos equis
+    set laststatus=2                                          " I don't normally show the statusline
+    set statusline=%f%(\ [%M%R%W]%)%=%y " but when I do, I prefer dos equis
   endif
 
   " ripgrep
@@ -195,7 +204,7 @@ if has('vim_starting')  || get(g:, 'reload_vimrc_options')
 
 endif
 
-" MAPS:            {{{1
+" MAPS: {{{1
 
 " Abbrevs: {{{2
 
@@ -206,7 +215,7 @@ abbrev unkown unknown
 cabbrev <expr> vsb getcmdline() =~# '^vsb' && getcmdpos() is 4 ? 'vert sb' : 'vsb'
 cabbrev <expr> vh getcmdline() =~# '^vh' && getcmdpos() is 3 ? 'vert h' : 'vh'
 cabbrev <expr> vsn getcmdline() =~# '^vsn' && getcmdpos() is 4 ? 'vert sn' : 'vsn'
-cabbrev <expr> vsp getcmdline() =~# '^vsp' && getcmdpos() is 4 ? 'vert sp' : 'vsp'
+" cabbrev <expr> vsp getcmdline() =~# '^vsp' && getcmdpos() is 4 ? 'vert sp' : 'vsp'
 cabbrev <expr> vsbn getcmdline() =~# '^vsbn' && getcmdpos() is 5 ? 'vert sbn' : 'vsbn'
 cabbrev <expr> vsbp getcmdline() =~# '^vsbp' && getcmdpos() is 5 ? 'vert sbp' : 'vsbp'
 cabbrev <expr> vterm getcmdline() =~# '^vterm' && getcmdpos() is 6 ? 'vert term' : 'vterm'
@@ -255,7 +264,7 @@ inoremap <expr> <cr> maps#I_cr()
 inoremap <expr> <silent> <c-b> maps#I_chain()
 
 " <c-l> same but extra functionality (:nohls, :diffup)
-nnoremap <silent> <c-l> :nohlsearch<bar>diffupdate<cr><c-l>
+nnoremap <silent> <c-l> :nohlsearch<bar>diffupdate<bar>redraw!<cr>
 nnoremap <silent> <leader><c-l> :syntax sync fromstart<cr>
 
 " netrw sucks
@@ -481,51 +490,41 @@ xnoremap <expr> N v:searchforward ? 'Nzv' : 'nzv'
 onoremap <expr> n v:searchforward ? 'n' : 'N'
 onoremap <expr> N v:searchforward ? 'N' : 'n'
 
-" }}}
-
-" COMMANDS:        {{{1
+" COMMANDS: {{{1
 
 " search all args with :grep
 command! -nargs=+ -bar ArgGrep call cmds#FilelistGrep(<q-args>, argv())
 
 " search all listed buffers with :grep
-command! -nargs=+ -bar  BufGrep call cmds#FilelistGrep(<q-args>,
- \ filter(range(1, bufnr('$')), { _,n -> buflisted(n) }))
+command! -nargs=+ -bar  BufGrep call cmds#FilelistGrep(<q-args>, filter(range(1, bufnr('$')), { _,n -> buflisted(n) }))
 
 " search all args with :vimgrep (don't use on big files)
 command! -nargs=+ -bar ArgVimgrep call cmds#FilelistVimgrep(<q-args>, argv())
 
 " search all args with :vimgrep (don't use on big files)
-command! -nargs=+ -bar BufVimgrep call cmds#FilelistVimgrep(<q-args>,
- \ filter(range(1, bufnr('$')), { _,n -> buflisted(n) }))
+command! -nargs=+ -bar BufVimgrep call cmds#FilelistVimgrep(<q-args>, filter(range(1, bufnr('$')), { _,n -> buflisted(n) }))
 
 " bottom terminal
-command! -nargs=? -bar BTerm execute 'terminal'
- \ <bar>execute printf('%dwincmd _', <q-args> =~ '^\d\+$' ? <q-args> : '15')<bar>setl winfixheight
+command! -nargs=? -bar BTerm execute 'terminal' <bar>execute printf('%dwincmd _', <q-args> =~ '^\d\+$' ? <q-args> : '15')<bar>setl winfixheight
 
 " still synchronous but quieter make
-command! -bar -nargs=? Make if <q-args> !~ '^\s*$'|let g:make_args = <q-args>|endif|
- \ execute 'silent make' get(g:, 'make_args', '')|redraw!|echo ':Make' get(g:, 'make_args', '')
+command! -bar -nargs=? Make if <q-args> !~ '^\s*$' | let g:make_args = <q-args> | endif | execute 'silent make' get(g:, 'make_args', '') | redraw! | echo ':Make' get(g:, 'make_args', '')
 
-command! -bar -nargs=? Lmake if <q-args> !~ '^\s*$'|let g:lmake_args = <q-args>|endif|
-\ execute 'silent lmake' get(g:, 'lmake_args', '')|redraw!|echo ':Lmake' get(g:, 'lmake_args', '')
+command! -bar -nargs=? Lmake if <q-args> !~ '^\s*$' | let g:lmake_args = <q-args> | endif | 'silent lmake' get(g:, 'lmake_args', '') | redraw! | echo ':Lmake' get(g:, 'lmake_args', '')
 
 " rename
 command! -complete=file -nargs=1 -bar Rename call cmds#Rename(<q-args>)
 
 " :help :DiffOrig
-command! DiffOrig vert new|set buftype=nofile|read ++edit #|0d_|diffthis|wincmd p|diffthis
+command! DiffOrig vert new | set buftype=nofile | read ++e# | 0d_ | diffthis | wincmd p | diffthis
 
 " remove trailing whitespace
 command! -nargs=0 -range=% -bar RmTrailWS Keepview keepp <line1>,<line2>s/\s\+$//e
 
-command! -bar -nargs=0 PreviewTags execute &previewheight.'new'
- \ |setlocal buftype=nofile|put=getcompletion('', 'tag')|1delete
+command! -bar -nargs=0 PreviewTags execute &previewheight.'new' | setlocal buftype=nofile | put=getcompletion('', 'tag') | 1d
 
 " paste Bin
-command! -range=% -nargs=0 Bin
- \ exe '<line1>,<line2>w !curl -NsF ''text=<-'' vpaste.net\?ft='
- \ . &ft . '|tr -d ''\n''|xsel -bi'
+command! -range=% -nargs=0 Bin exe '<line1>,<line2>w !curl -NsF ''text=<-'' vpaste.net\?ft='.&ft.'|tr -d ''\n''|xsel -bi'
 
 " clear quickfix
 command! -nargs=0 Cclear call setqflist([], 'r')
@@ -549,27 +548,19 @@ command! -nargs=+ BufDo call cmds#BufDo(<q-args>)
 command! -nargs=+ WinDo call cmds#WinDo(<q-args>)
 
 " :set tgc (and t_8f and t_8b so it actually works)
-command! -nargs=0 -bar TGC if has('termguicolors') && !str2nr($VIM_NOTGC
- \|| $TERM =~? 'rxvt\|cygwin\|linux\|screen')
- \  | let [&t_8f,&t_8b] = ["\<esc>[38;2;%lu;%lu;%lum","\<esc>[48;2;%lu;%lu;%lum"]
- \  | set tgc
- \| endif
+command! -nargs=0 -bar TGC if has('termguicolors') && !str2nr($VIM_NOTGC || $TERM =~? 'rxvt\|cygwin\|linux\|screen') | let [&t_8f,&t_8b] = ["\<esc>[38;2;%lu;%lu;%lum","\<esc>[48;2;%lu;%lu;%lum"] | set tgc | endif
 
-command! -nargs=0 -bar SourceVimrc Keepview source $MYVIMRC | redraw
- \| echo 'vimrc loaded'
+command! -nargs=0 -bar SourceVimrc Keepview source $MYVIMRC | redraw | echo 'vimrc loaded'
 
-command! -nargs=0 -bar SourceVimAll Keepview source $MYVIMRC
- \\| let __sv = map(cmds#SourceListedVimfiles(), { _,f -> fnameescape(fnamemodify(f, ':~:.')) })
- \| redraw | echo 'vimrc loaded'.(empty(__sv)?'':' +('.join(__sv, ', ').')')
+command! -nargs=0 -bar SourceVimAll Keepview source $MYVIMRC \| let __sv = map(cmds#SourceListedVimfiles(), { _,f -> fnameescape(fnamemodify(f, ':~:.')) }) | redraw | echo 'vimrc loaded'.(empty(__sv)?'':' +('.join(__sv, ', ').')')
 
 command! -nargs=0 -bar SourceCurrent Keepview so % | redraw | echo 'Sourced' expand('%:.:~')
 
-command! -nargs=0 -bar SourceGuarded Keepview call cmds#SourceVimGuard() | redraw
- \| echo 'Sourced' expand('%:.:~')
+command! -nargs=0 -bar SourceGuarded Keepview call cmds#SourceVimGuard() | redraw | echo 'Sourced' expand('%:.:~')
 
 command! -nargs=1 -bar Keepview let w:viewsav = winsaveview() | exe <q-args> | call winrestview(w:viewsav)
 
-" AUTOCMDS:        {{{1
+" AUTOCMDS: {{{1
 
 augroup Vimrc
   autocmd!
@@ -620,7 +611,7 @@ augroup Vimrc
   " view; don't update at all if time stamp is already up-to-date in order
   " to preserve undo history
   autocmd BufWritePre doc/*.txt call autocmd#UpdateDate()
-  autocmd BufWritePre *.vim call autocmd#UpdateDate('^" Last Change:')
+  autocmd BufWritePre *.{vim,vimix} call autocmd#UpdateDate('^" Last Change:')
   autocmd BufWritePre {?,}vimrc call autocmd#UpdateDate('^" Last Change:')
   autocmd BufWritePre *.{py,snippets,sh,bash,zsh} call autocmd#UpdateDate('^# Last Change:')
   autocmd BufWritePre *.c,*.cpp,*.js call autocmd#UpdateDate('^\%(\/\/\| *\) Last Change:')
@@ -633,14 +624,17 @@ augroup Vimrc
   autocmd FileType python     autocmd BufWritePost <buffer> sil! lmake | redraw! | lopen | wincmd p
   autocmd FileType python endif
 
+  autocmd FileType vim if expand('%:t') =~ '^test_' || expand('%:h:t') =~ '^test'
+  autocmd FileType vim   autocmd! * <buffer>
+  autocmd FileType vim   autocmd! BufWritePost <buffer> call feedkeys(":Test\<cr>\<c-w>p", 'nL')
+  autocmd FileType vim endif
+
   if exists('##TerminalWinOpen')
     " move cursor to previous prompt string (no wrap)
-    autocmd TerminalWinOpen * nnoremap <buffer> <silent> <c-p>
-     \ -:call search('^\%(env\s\)\?[><]', 'bW')<cr>zt+
+    autocmd TerminalWinOpen * nnoremap <buffer> <silent> <c-p> -:call search('^\%(env\s\)\?[><]', 'bW')<cr>zt+
 
     " move cursor to next prompt string (no wrap)
-    autocmd TerminalWinOpen * nnoremap <buffer> <silent> <c-n>
-     \ $:call search('^\%(env\s\)\?[><]', 'W')<cr>zt+
+    autocmd TerminalWinOpen * nnoremap <buffer> <silent> <c-n> $:call search('^\%(env\s\)\?[><]', 'W')<cr>zt+
 
     " set terminal colors
     autocmd TerminalWinOpen * if &tgc|call color#setTermColors()|endif
@@ -685,9 +679,7 @@ if !filereadable($VIMDIR.'/autoload/plug.vim')
     endif
     echohl None
 
-    command! -nargs=0 -bar PlugDownload execute 'silent !curl -NsfLo '.$VIMDIR
-     \ .'/autoload/plug.vim https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
-     \ | redraw! | SourceVimrc | PlugInstall --sync | SourceVimrc
+    command! -nargs=0 -bar PlugDownload execute 'silent !curl -NsfLo '.$VIMDIR.'/autoload/plug.vim https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim' | redraw! | SourceVimrc | PlugInstall --sync | SourceVimrc
   endfunction
 
   augroup PlugDownload
@@ -699,20 +691,17 @@ if !filereadable($VIMDIR.'/autoload/plug.vim')
   finish " since vim-plug is not installed, exit
 endif
 
-" }}}
-
-" C:              {{{2
+" C: {{{2
 
 let g:c_no_cformat = 1
 let g:c_no_c99 = 1
 let g:c_no_c11 = 1
 let g:c_no_bsd = 1
 
-" Vim:            {{{2
+" Vim: {{{2
 
 let g:vim_indent_cont = 1
 
-" }}}
 " Syntax Folding: {{{2
 
 " let g:ada_folding               = 'ig'
@@ -738,12 +727,12 @@ let g:vim_indent_cont = 1
 " let g:xml_syntax_folding        = 1
 " let g:zsh_fold_enable           = 1
 
-" Banish Netrw:   {{{2
+" Banish Netrw: {{{2
 
 " let g:loaded_netrw       = 1
 " let g:loaded_netrwPlugin = 1
 
-" Placeholder:    {{{2
+" Placeholder: {{{2
 
 map <m-h> <plug>(placeholderPrev)
 imap <m-h> <plug>(placeholderPrev)
@@ -754,7 +743,7 @@ smap <m-l> <plug>(placeholderNext)
 imap <m-;> <plug>(placeholder)
 imap <m-:> <plug>(placeholderPrompt)
 
-" Matchup:        {{{2
+" Matchup: {{{2
 
 let g:matchup_transmute_enabled = 0
 let g:matchup_delim_noskips = 2
@@ -763,7 +752,7 @@ let g:matchup_matchparen_offscreen = { 'method': 'popup', 'scrolloff': 1 }
 let g:matchup_matchparen_deferred = 1
 " let g:matchup_matchparen_hi_surround_always = 1
 
-" Ultisnips:      {{{2
+" Ultisnips: {{{2
 
 let g:UltiSnipsExpandTrigger         = '<tab>'
 let g:UltiSnipsJumpForwardTrigger    = '<m-o>'
@@ -772,12 +761,12 @@ let g:UltiSnipsListSnippets          = '<F4>'
 let g:UltiSnipsSnippetDirectories    = [ 'UltiSnips' ]
 let g:ultisnips_python_quoting_style = 'double'
 
-" Python Syntax:  {{{2
+" Python Syntax: {{{2
 
 let g:python_highlight_space_errors = 0
 let g:python_highlight_all = 1
 
-" Vimtex:         {{{2
+" Vimtex: {{{2
 
 let g:tex_flavor = 'latex'
 let vimtex_view_general_viewer = 'zathura'
@@ -785,25 +774,25 @@ let vimtex_viewer_general = 'zathura'
 let vimtex_view_method = 'zathura'
 let vimtex_quickfix_mode = 0
 let tex_conceal = 'abdmg'
-let g:vimtex_compiler_latexmk = {
- \ 'build_dir' : 'latexbuild',
- \}
+let g:vimtex_compiler_latexmk = { 'build_dir':'latexbuild' }
 
-" Tex Conceal:    {{{2
+" Tex Conceal: {{{2
 
 let g:tex_conceal='abdmg'
 
-" Gruvbox:        {{{2
+" Gruvbox: {{{2
 
 let g:gruvbox_italicize_strings = 0
 
-" Plug:           {{{2
+" Plug: {{{2
 
 let g:plug_threads = 64
 
-" }}}
+" PLUGINS: {{{1
 
-" PLUGINS:         {{{1
+" set rtp+=~/git/vim/lsbuffer.vim
+" set rtp+=~/git/vim/vimix
+" set rtp+=~/git/vim/ptppt.vim
 
 call plug#begin($VIMDIR.'/plugged')
 
@@ -812,7 +801,7 @@ call plug#begin($VIMDIR.'/plugged')
 Plug 'dylnmc/ctrlg.vim'
 Plug 'junegunn/goyo.vim'
 Plug 'junegunn/gv.vim'
-Plug 'tweekmonster/helpful.vim'
+" Plug 'tweekmonster/helpful.vim'
 " Plug 'dylnmc/lsbuffer.vim'
 Plug 'dylnmc/placeholder.vim'
 Plug 'vim-python/python-syntax'
@@ -833,6 +822,7 @@ Plug 'tpope/vim-repeat'
 Plug 'tpope/vim-rhubarb'
 Plug 'tpope/vim-surround'
 Plug 'dhruvasagar/vim-table-mode'
+Plug 'novasenco/vimix'
 " Plug 'puremourning/vimspector'
 Plug 'lervag/vimtex'
 
@@ -848,10 +838,11 @@ endif
 
 " BEST: The best, and the ones I use
 Plug 'cocopon/iceberg.vim'
+Plug 'novasenco/nokto'
 Plug 'ajh17/spacegray.vim'
 Plug 'dylnmc/vim-colors-paramount'
 Plug 'lifepillar/vim-gruvbox8'
-Plug 'novasenco/vulpo.vim'
+Plug 'novasenco/vulpo'
 
 " " GREAT: Some of the best, and I like 'em
 " Plug 'AlessandroYorba/Alduin'
@@ -908,18 +899,16 @@ Plug 'dylnmc/ViMan'
 
 unlet g:plug_url_format
 
-" }}}
-
 call plug#end()
 
-" COLOR:           {{{1
+" COLOR: {{{1
 
 let s:colors_name = get(g:, 'colors_name', 'default')
 let s:color_default = 'desert'
 if s:colors_name is 'default' || s:colors_name is s:color_default
   try
     " TGC
-    colo vulpo
+    colo nokto
   catch /^Vim\%((\a\+)\)\=:E185:/
     set bg=dark
     exe 'colo' s:color_default

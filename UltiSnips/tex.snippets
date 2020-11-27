@@ -1,5 +1,5 @@
 # Author: Nova Senco
-# Last Change: 01 October 2020
+# Last Change: 07 October 2020
 
 global !p
 texMathZones = ['texMathZone' + x for x in ['A', 'AS', 'B', 'BS', 'C', 'CS', 'D', 'DS', 'E', 'ES', 'F', 'FS', 'G', 'GS', 'H', 'HS', 'I', 'IS', 'J', 'JS', 'K', 'KS', 'L', 'LS', 'DS', 'V', 'W', 'X', 'Y', 'Z', 'AmsA', 'AmsB', 'AmsC', 'AmsD', 'AmsE', 'AmsF', 'AmsG', 'AmsAS', 'AmsBS', 'AmsCS', 'AmsDS', 'AmsES', 'AmsFS', 'AmsGS' ]]
@@ -25,6 +25,10 @@ ${0:${VISUAL:TODO}}
 endsnippet
 
 # common
+
+snippet sum "summation"
+\sum_{${1:i=${2:0}}}^{${3:\infty}} $0
+endsnippet
 
 snippet beg "begin{} / end{}" w
 \begin{$1}`!p
@@ -208,8 +212,8 @@ g = match.group(2)
 snip.rv = ("{{{}}}" if len(g) > 1 else "{}").format(g)`
 endsnippet
 
-snippet // "fraction" iA
 context "math()"
+snippet // "fraction" iA
 \\frac{${1:${VISUAL}}}{$2}$0
 endsnippet
 

@@ -1,9 +1,9 @@
 " Author: Nova Senco
-" Last Change: 01 October 2020
+" Last Change: 16 October 2020
 
 setl fo-=t
 setl fo-=a
-setl expandtab setl indentexpr=GetGooglePythonIndent(v:lnum)
+setl expandtab indentexpr=GetGooglePythonIndent(v:lnum)
 
 let s:maxoff = 50 " maximum number of lines to look backwards.
 

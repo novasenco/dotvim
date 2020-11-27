@@ -1,5 +1,5 @@
 " Author: Nova Senco
-" Last Change: 01 October 2020
+" Last Change: 16 October 2020
 
 function! autocmd#HandleSwap(filename)
     let pid = string(swapinfo(v:swapname).pid)
@@ -41,8 +41,6 @@ function! autocmd#UpdateDate(...) " optionals: (prefix, timefmt, timeregex)
       if !search(printf('%s\s*%s', prefix, escape(time, '\~^$[]*+')), 'nc', line('.'))
         exe printf('keepj keepp s/%s\zs\s*\%%(%s\)\?/ %s/e', prefix, timeregex, time)
       endif
-    else
-      unsil echom 'search not found'
     endif
     call setpos('.', curpos)
 endfunction
