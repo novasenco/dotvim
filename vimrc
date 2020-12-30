@@ -1,5 +1,5 @@
 " Author: Nova Senco
-" Last Change: 27 November 2020
+" Last Change: 30 December 2020
 
 " SETUP: {{{1
 
@@ -129,11 +129,11 @@ if has('vim_starting') || get(g:, 'reload_vimrc_options')
 
   if has('cmdline_info')
     set noshowcmd " don't show count or visual selection info
-    set noruler   " don't show annoying ruler if laststatus=0
+    set noruler   " don't show annoying ruler if stl empty
   endif
 
   if has('conceal')
-    set concealcursor=n " hide concealed text in normal, insert modes
+    set concealcursor=n " hide concealed text in normal
     set conceallevel=2  " conceal text fully but show cchar if defined
   endif
 
@@ -161,8 +161,8 @@ if has('vim_starting') || get(g:, 'reload_vimrc_options')
   endif
 
   if has('statusline')
-    set laststatus=2                                          " I don't normally show the statusline
-    set statusline=%f%(\ [%M%R%W]%)%=%y " but when I do, I prefer dos equis
+    set laststatus=1
+    set statusline=%f%(\ [%M%R%W]%)%=%y
   endif
 
   " ripgrep
@@ -240,10 +240,13 @@ inoremap <silent> <m-W> <c-bslash><c-o>:sil noau up<cr>
 nnoremap <localleader>q :qa<cr>
 
 " <c-p> opens last command
-nnoremap <c-p> :<c-p>
+nnoremap <expr> <c-p> ':<c-p>'
 
 " quickly edit vimrc
 nnoremap <silent> <localleader>v :edit $MYVIMRC<cr>
+
+" tab toggle fold
+nnoremap <tab> za
 
 " sourcing
 nnoremap <silent> <localleader>V :SourceVimAll<cr>
@@ -309,7 +312,7 @@ nnoremap <silent> <leader>B :set opfunc=maps#Pastebin<cr>g@
 nmap <silent> <leader>BB V<space>B
 xnoremap <silent> <leader>B :<c-u>call maps#Pastebin(visualmode())<cr>
 
-" iter
+" iter | 
 nmap <leader>i <plug>(IterNext)
 nmap <leader>I <plug>(IterPrev)
 xmap <leader>i <plug>(IterNext)
@@ -360,6 +363,11 @@ cnoremap <m-e> <c-e>
 
 " c_CTRL-Y (eg in /search/) shows cursor if folded
 cnoremap <c-y> <c-r>=[''][execute('normal! zv')]<cr>
+
+" Search Fold: {{{2
+
+cnoremap <expr> <c-t> getcmdtype() =~ '[/?]' ? (foldclosed('.') is -1 ? '<c-t>' : '').'<c-r>=execute("norm! zxzz")[-1]<cr>' : ''
+cnoremap <expr> <c-g> getcmdtype() =~ '[/?]' ? (foldclosed('.') is -1 ? '<c-g>' : '').'<c-r>=execute("norm! zxzz")[-1]<cr>' : ''
 
 " Quick: {{{2
 
@@ -490,6 +498,8 @@ xnoremap <expr> N v:searchforward ? 'Nzv' : 'nzv'
 onoremap <expr> n v:searchforward ? 'n' : 'N'
 onoremap <expr> N v:searchforward ? 'N' : 'n'
 
+" }}}
+
 " COMMANDS: {{{1
 
 " search all args with :grep
@@ -565,9 +575,9 @@ command! -nargs=1 -bar Keepview let w:viewsav = winsaveview() | exe <q-args> | c
 augroup Vimrc
   autocmd!
 
-  " prevent random jumping when writing. noice *tongue click*
-  autocmd BufWritePre * let w:viewsav = winsaveview()
-  autocmd BufWritePost * call winrestview(w:viewsav)
+  " " prevent random jumping when writing. noice *tongue click*
+  " autocmd BufWritePre * let w:viewsav = winsaveview()
+  " autocmd BufWritePost * call winrestview(w:viewsav)
 
   if has('mksession')
     " save and restore view persistently. noice *tongue click*
@@ -588,17 +598,18 @@ augroup Vimrc
   " " close preview window on CompleteDone (silent for [Command Line])
   " autocmd CompleteDone * sil! pclose
 
-  " open folds with incsearch only if 3 or more characters(-ish) typed (to preserve folds)
-  " (use c_CTRL-O instead)
+  " open folds with incsearch
   if exists('##CmdlineChanged')
     autocmd CmdlineChanged [/?] if foldclosed('.') isnot -1
     autocmd CmdlineChanged [/?]  execute 'normal! zv'
     autocmd CmdlineChanged [/?] endif
   endif
 
+  autocmd CmdwinEnter * setl nofoldenable foldlevel=99
+
   " prevent folding madness when typing parens or brackets in insert mode
   autocmd InsertEnter * if &fdm != 'manual'|let b:fdm = &foldmethod|setl foldmethod=manual|endif
-  autocmd InsertLeave * execute 'setl foldmethod='.get(b:, 'fdm', 'manual')
+  autocmd InsertLeave * execute 'sil! noau setl foldmethod='.get(b:, 'fdm', 'manual')
 
   autocmd SwapExists * call autocmd#HandleSwap(expand('<afile>:p'))
 
@@ -788,6 +799,8 @@ let g:gruvbox_italicize_strings = 0
 
 let g:plug_threads = 64
 
+" }}}
+
 " PLUGINS: {{{1
 
 " set rtp+=~/git/vim/lsbuffer.vim
@@ -825,6 +838,14 @@ Plug 'dhruvasagar/vim-table-mode'
 Plug 'novasenco/vimix'
 " Plug 'puremourning/vimspector'
 Plug 'lervag/vimtex'
+
+" if has('job') || has('nvim')
+"     Plug 'hauleth/asyncdo.vim'
+" endif
+
+if has('nvim')
+  Plug 'glacambre/firenvim', { 'do': { _ -> firenvim#install(0) } }
+endif
 
 if exists('*matchaddpos')
   Plug 'andymass/vim-matchup'
@@ -866,9 +887,9 @@ Plug 'novasenco/vulpo'
 " Plug 'sainnhe/sonokai'
 " Plug 'jacoborus/tender.vim'
 " Plug 'dracula/vim', { 'as': 'dracula' }
-" Plug 'tyrannicaltoucan/vim-deep-space'
+Plug 'tyrannicaltoucan/vim-deep-space'
 " Plug 'fcpg/vim-fahrenheit'
-" Plug 'habamax/vim-habanight'
+Plug 'habamax/vim-habanight'
 " Plug 'w0ng/vim-hybrid'
 " Plug 'lifepillar/vim-solarized8'
 " Plug 'cideM/yui'  " light
@@ -900,6 +921,8 @@ Plug 'dylnmc/ViMan'
 unlet g:plug_url_format
 
 call plug#end()
+
+" }}}
 
 " COLOR: {{{1
 

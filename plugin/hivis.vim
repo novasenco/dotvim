@@ -1,5 +1,5 @@
 " Author: Nova Senco
-" Last Change: 01 October 2020
+" Last Change: 06 December 2020
 
 augroup HiVis
   autocmd!
@@ -28,6 +28,7 @@ augroup HiVis
 
   " when leaving window
   autocmd BufWinLeave */colors/*.vim call clearmatches()
+  autocmd BufLeave    */colors/*.vim call clearmatches()
 
   " when writing color scheme
   autocmd BufWritePost */colors/*.vim if !get(g:, 'no_auto_hivis', get(b:, 'no_auto_hivis'))

@@ -6,7 +6,7 @@ endif
 
 " efficient (consolidated from below)
 function! fold#text()
-  return substitute(substitute(substitute(getline(v:foldstart), '^\s\{-}\zs\t', repeat('',&tabstop),'g'), escape(split(&foldmarker,',')[0], '~$^*[]\.').'\d*\s*', '', ''), '^\s\{-}\zs\s\?'.(&commentstring =~ '%s' ? '\%('.escape(split(&commentstring, '%s')[0], '~$^*[]\.').'\)\?' : ''), (tr(v:folddashes, '-', g:folddash)), '')
+  return substitute(substitute(substitute(getline(v:foldstart), '^\s\{-}\zs\t', repeat('',&tabstop),'g'), escape(split(&foldmarker,',')[0], '~$^*[]\.').'\d*\s*', '', ''), '^\s*'.(&commentstring =~ '%s' ? '\%('.escape(split(&commentstring, '%s')[0], '~$^*[]\.').'\)\?' : '').'\s*', (tr(v:folddashes, '-', g:folddash)).' ', '')
 endfunction
 
 
@@ -26,7 +26,7 @@ endfunction
 function! s:prefix(line)
   let cms = &commentstring =~ '%s' ? '\%('.escape(split(&commentstring, '%s')[0], '~$^*[]\.').'\)\?' : ''
   let dash = tr(v:folddashes, '-', g:folddash)
-  return substitute(a:line, '^\s\{-}\zs\s\?'.cms, dash, '')
+  return substitute(a:line, '^\s*'.cms.'\s*', dash.' ', '')
 endfunction
 
 " foldtext function
